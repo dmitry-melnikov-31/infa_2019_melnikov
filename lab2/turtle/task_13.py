@@ -1,0 +1,50 @@
+import turtle as tt
+tt.speed = 0
+
+def circle(r):
+    for i in range(60):
+        tt.forward(2 * 3.1416 * r / 60)
+        tt.left(6)
+        
+def duga(r):
+    for i in range(30):
+        tt.forward(2 * 3.1416 * r / 60)
+        tt.left(6)
+
+tt.shape("turtle")
+tt.pendown()
+tt.begin_fill()
+circle(100)
+tt.color("yellow")
+tt.end_fill()
+tt.color("black")
+tt.penup()
+tt.goto(-40, 130) 
+tt.pendown()
+tt.begin_fill()
+circle(15)
+tt.color("blue")
+tt.end_fill()
+tt.penup()
+tt.goto(40, 130) 
+tt.pendown()
+tt.color("black")
+tt.begin_fill()
+circle(15)
+tt.color("blue")
+tt.end_fill()
+tt.color("black")
+tt.penup()
+tt.goto(0, 120) 
+tt.pendown()
+tt.width(10)
+tt.goto(0, 80) 
+tt.penup()
+tt.goto(-50, 70) 
+tt.pendown()
+tt.color("red")
+tt.left(270)
+duga(50)
+tt.penup()
+tt.goto(1000,1000)
+tt.exitonclick()
