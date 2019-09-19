@@ -286,6 +286,15 @@ def circle(x, y, R):
                  fill = _brushColor)
   return circ
 #----------------------------------
+def oval(x1, y1, x2, y2):
+  x1, y1 = transformCoord ( x1, y1 )
+  x2, y2 = transformCoord ( x2, y2 )
+  circ = _C.create_oval(x1, y1, x2, y2,
+                 outline = _penColor,
+                 width = _penSize,
+                 fill = _brushColor)
+  return circ
+#----------------------------------
 def polygon(points):
   coord = unpackCoord(points)
   if points[0] != points[-1]:
