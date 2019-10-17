@@ -3,7 +3,7 @@ from random import randrange as rnd, choice
 import time
 root = tk.Tk()
 root.geometry('800x600')
-count = 20
+count = 10
 colors = ['orange','yellow','green','blue']
 
 canv = tk.Canvas(root,bg='white')
@@ -14,10 +14,11 @@ def rgb(r, g, b):
 
 
 class Pole:
-    def __init__(self, x, y, k):
+    def __init__(self, x, y, k, funk):
         self.p = Vector(x, y)
         self.k = k
-
+        self.funk = funk
+        canv.create_oval(self.p.x-5,self.p.y-5,self.p.x+5,self.p.y+5,fill = 'black', width=0)
 
 class Vector:
     def __init__(self, x = 0, y = 0):
@@ -39,10 +40,10 @@ class Vector:
 
 
 class Shar:
-    def __init__(self, vx = 5, vy = 5, ax = 0, ay = 0):
+    def __init__(self, ax = 0, ay = 0):
         self.r = rnd(10, 20)
         self.m = (self.r ** 2)
-        self.p = Vector(rnd(100, 700), rnd(100, 500))
+        self.p = Vector(rnd(100, 700),rnd(100, 500))
         self.v = Vector(rnd(-5, 5), rnd(-5, 5))
         self.a = Vector(ax, ay)
         self.c = canv.create_oval(self.p.x-self.r,self.p.y-self.r,self.p.x+self.r,self.p.y+self.r,fill = choice(colors), width=0)
@@ -64,13 +65,16 @@ class Shar:
         self.stena()
         self.trenie()
         self.another()
-        self.pole(polep)
+        self.pole(pole1)
+        self.pole(pole2)
+        self.pole(pole3)
+        self.pole(pole4)
         self.v = self.v.add(self.a)
     
     def pole(self, pole):
         l = ((self.p.x - pole.p.x) ** 2 + (self.p.y - pole.p.y) ** 2) ** 0.5
-        self.a.x = self.a.x + pole.k / l * (self.p.x - pole.p.x) / l
-        self.a.y = self.a.y + pole.k / l * (self.p.y - pole.p.y) / l
+        self.a.x = self.a.x + pole.k * pole.funk(l) * (self.p.x - pole.p.x) / l / pole.funk(500)
+        self.a.y = self.a.y + pole.k * pole.funk(l) * (self.p.y - pole.p.y) / l / pole.funk(500)
     
     
     
@@ -108,9 +112,20 @@ class Shar:
                     self.a.y = self.a.y + (self.r + s[f].r - l) * (self.p.y - s[f].p.y) * k * s[f].m / self.m
             
             
-            
+def squad(x):
+    return x ** 2
+def line(x):
+    return x
+def giperbol(x):
+    return 1 / x
+def sq_giperbol(x):
+    return 1 / x **2
+
 s = []        
-polep = Pole(400, 300, -50)
+pole1 = Pole(230, 300, -0.05, giperbol)
+pole2 = Pole(570, 300, -0.05, giperbol)
+pole3 = Pole(400, 200, -0.05, giperbol)
+pole4 = Pole(400, 400, -0.05, giperbol)
 for i in range(count):        
     s.append(Shar())        
 
