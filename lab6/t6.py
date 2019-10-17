@@ -4,8 +4,7 @@ import time
 root = Tk()
 root.geometry('800x600')
 
-canv = Canvas(root,bg='white')
-canv.pack(fill=BOTH,expand=1)
+
 
 colors = ['orange','yellow','green','blue']
 
@@ -14,19 +13,16 @@ def new_ball():
     global x,y,r,h,strike,counter
     if strike == False:
         print("miss")
-    if counter == 10:
-        canv.destroy()
-        return
     counter += 1
     strike = False
     canv.delete(ALL)
     x = rnd(100,700)
     y = rnd(100,500)
     r = rnd(30,50)
-    h = 0.15
+    h = 0.2
     canv.create_oval(x-r,y-r,x+r,y+r,fill = choice(colors), width=0)
     canv.create_oval(x-r*h,y-r,x+r*h,y-r*(1-2*h),fill = 'black', width=0)
-    root.after(800,new_ball)
+    return
 
 def click(event):
     rr = 3
@@ -62,11 +58,27 @@ print("\nStart\n")
 def choic(event):
     print(event.x, event.y)
     return
-new_ball()
+
+def update():
+    global counter
+    if counter == 10:
+        canv.destroy()
+        return
+    new_ball()
+    root.after(800,update)
+
+
+
+
+canv = Canvas(root,bg='white')
+canv.pack(fill=BOTH,expand=1)
+
+#root1 = Tk()
+
+update()    
 canv.bind('<Button-1>', click)
-mainloop()
 
-
+root.mainloop()
 
 score = headshots * 3 + shots - lohs
 print('\n')
