@@ -18,8 +18,16 @@ class Pole:
         self.p = Vector(x, y)
         self.k = k
         self.funk = funk
-        canv.create_oval(self.p.x-5,self.p.y-5,self.p.x+5,self.p.y+5,fill = 'black', width=0)
+        canv.create_oval(self.p.x-8,self.p.y-8,self.p.x+8,self.p.y+8,fill = 'black', width=0)
 
+class Vihr:
+    def __init__(self, x, y, k, funk):
+        self.p = Vector(x, y)
+        self.k = k
+        self.funk = funk
+        canv.create_oval(self.p.x-5,self.p.y-5,self.p.x+5,self.p.y+5,fill = 'red', width=0)
+        
+        
 class Vector:
     def __init__(self, x = 0, y = 0):
         self.x = x
@@ -49,35 +57,54 @@ class Shar:
         self.c = canv.create_oval(self.p.x-self.r,self.p.y-self.r,self.p.x+self.r,self.p.y+self.r,fill = choice(colors), width=0)
     
     def move(self):
-        vmax = 10
-        self.p = self.p.add(self.v)
+        vmax = 15
+        ks = 1
+        self.p = self.p.add(self.v.mul(ks))
         v = (self.v.x ** 2 + self.v.y ** 2) ** 0.5
         if v > vmax:
             col = rgb(0, 255, 0)
         else:
             col = rgb(0, round(255 / vmax * v), 255 - round(255 / vmax * v))
         canv.itemconfig(self.c, fill = col)
-        canv.move(self.c, self.v.x, self.v.y)
+        canv.move(self.c, self.v.x * ks, self.v.y * ks)
     
     def ax(self):
-        self.a.x = 0
-        self.a.y = 0
+        self.grav()
         self.stena()
         self.trenie()
         self.another()
-        self.pole(pole1)
-        self.pole(pole2)
-        self.pole(pole3)
-        self.pole(pole4)
+        self.polya()
+        self.vihri()
         self.v = self.v.add(self.a)
+    
+    
+    def grav(self):
+        global gravity
+        self.a.x = gravity.x
+        self.a.y = gravity.y
     
     def pole(self, pole):
         l = ((self.p.x - pole.p.x) ** 2 + (self.p.y - pole.p.y) ** 2) ** 0.5
         self.a.x = self.a.x + pole.k * pole.funk(l) * (self.p.x - pole.p.x) / l / pole.funk(500)
         self.a.y = self.a.y + pole.k * pole.funk(l) * (self.p.y - pole.p.y) / l / pole.funk(500)
     
+    def polya(self):
+        global poles
+        if poles != []:
+            for i in range(len(poles)):
+                self.pole(poles[i])
     
     
+    def vihr(self, v):
+        l = ((self.p.x - v.p.x) ** 2 + (self.p.y - v.p.y) ** 2) ** 0.5
+        self.a.x = self.a.x + v.k * v.funk(l) * (self.p.y - v.p.y) / l / v.funk(500)
+        self.a.y = self.a.y - v.k * v.funk(l) * (self.p.x - v.p.x) / l / v.funk(500)
+    
+    def vihri(self):
+        global vihrs
+        if vihrs != []:
+            for i in range(len(vihrs)):
+                self.vihr(vihrs[i])
     
     
     def stena(self):
@@ -103,7 +130,7 @@ class Shar:
     
     def another(self):
         global s, i, count
-        k = 0.02
+        k = 0.03
         for f in range(count):
             if i != f:
                 l = ((self.p.x - s[f].p.x) ** 2 + (self.p.y - s[f].p.y) ** 2) ** 0.5
@@ -114,18 +141,29 @@ class Shar:
             
 def squad(x):
     return x ** 2
+
 def line(x):
     return x
+
 def giperbol(x):
     return 1 / x
+
 def sq_giperbol(x):
     return 1 / x **2
 
-s = []        
-pole1 = Pole(230, 300, -0.05, giperbol)
-pole2 = Pole(570, 300, -0.05, giperbol)
-pole3 = Pole(400, 200, -0.05, giperbol)
-pole4 = Pole(400, 400, -0.05, giperbol)
+def constant(x):
+    return 1
+
+
+gravity = Vector(0,0)
+s = [] 
+poles = []
+vihrs = []
+#poles.append(Pole(230, 300, -0.05, giperbol)) 
+#poles.append(Pole(570, 300, -0.05, giperbol)) 
+#poles.append(Pole(400, 200, -0.05, giperbol))
+poles.append(Pole(400, 300, -0.5, constant))
+vihrs.append(Vihr(400, 300, 0.15, constant))
 for i in range(count):        
     s.append(Shar())        
 
