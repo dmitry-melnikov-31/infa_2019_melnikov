@@ -90,6 +90,6 @@ def update():
     root.after(30, update)
 
     
-m = Map(60, 40)
+m = Map(200, 130)
 update()
 root.mainloop()
