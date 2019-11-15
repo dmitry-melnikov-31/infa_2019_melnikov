@@ -7,7 +7,7 @@ def rgb(r, g, b):
     return "#%02x%02x%02x" % (r, g, b)
 
 class Map():
-    def __init__(self, x, y, size = 5):
+    def __init__(self, x, y, size = 10):
         self.x = x
         self.y = y
         self.age = 0
