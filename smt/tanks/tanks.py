@@ -1,11 +1,18 @@
 import tkinter as tk
 import numpy as np
+import sys
 from random import randrange as rnd, choice
 root = tk.Tk()
 courses = ['up', 'down', 'right', 'left']
 root.title("Box of tanks")
 canv = tk.Canvas(root,bg='white')
 canv.pack(fill=tk.BOTH,expand=1)
+vision = False
+if len(sys.argv) != 1:
+    if sys.argv[1] == 'vis':
+        vision = True
+
+
 
 def crossingover(a, b):
     c = []
@@ -53,7 +60,7 @@ def weights_update():
     
     for i in range(5):
         sss = []
-        for j in range(112):
+        for j in range(9):
             sss.append(str(rnd(-100, 101)))
         new_weights.append(sss)
         
@@ -113,7 +120,7 @@ class Map:
         self.colision()
         if self.age == 3000:
             exit('')
-        root.after(10, self.update)
+        root.after(1, self.update)
     
     def spaun_bots(self):
         global weights
@@ -128,8 +135,8 @@ class Map:
                 if (b.parent != t) and ((t.x - b.x) ** 2 < 2) and ((t.y - b.y) ** 2 < 2):
                     t.lifes -= 1
                     if t.lifes == 0:
-                        b.parent.points += 1500
-                    b.parent.points += 300
+                        b.parent.points += 300
+                    b.parent.points += 100
                     if z:
                         b.destroy()
                         z = False
@@ -141,7 +148,8 @@ class Bullet: #_________________________________________________________________
         self.course = course
         self.parent = parent
         self.world = world
-        self.id = canv.create_oval((self.x  + 0.1)* self.world.size, (self.y + 0.1)* self.world.size,
+        if vision:
+            self.id = canv.create_oval((self.x  + 0.1)* self.world.size, (self.y + 0.1)* self.world.size,
                                             (self.x + 0.9) * self.world.size, (self.y + 0.9) * self.world.size, fill = 'red', width = 0)
     
     def bullet_update(self):
@@ -151,7 +159,8 @@ class Bullet: #_________________________________________________________________
         self.show()
     
     def show(self):
-        canv.coords(self.id, (self.x  + 0.1)* self.world.size, (self.y + 0.1)* self.world.size,
+        if vision:
+            canv.coords(self.id, (self.x  + 0.1)* self.world.size, (self.y + 0.1)* self.world.size,
                     (self.x + 0.9) * self.world.size, (self.y + 0.9) * self.world.size)
     
     def move(self):
@@ -166,7 +175,8 @@ class Bullet: #_________________________________________________________________
     
     def destroy(self):
         self.world.bullets.remove(self)
-        canv.delete(self.id)
+        if vision:
+            canv.delete(self.id)
     
     
 class Tank: #_____________________________________________________________________________________________________________________________
@@ -188,21 +198,21 @@ class Tank: #___________________________________________________________________
         self.lifes = self.world.tanks_start_lifes
         self.charges = self.world.tanks_max_charges
         self.charge_part = 0
-        self.centre = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
+        if vision:
+            self.centre = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
                                             (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
-        self.gun = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
+            self.gun = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
                                         (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
-        self.left_bort = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
+            self.left_bort = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
                                             (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
-        self.right_bort = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
+            self.right_bort = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
                                             (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
-        self.left_ass = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
+            self.left_ass = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
                                             (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
-        self.right_ass = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
+            self.right_ass = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
                                             (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
-        if self.ii:
-            self.ass = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size,
-                                            (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
+            if self.ii:
+                self.ass = canv.create_rectangle(self.x * self.world.size, self.y * self.world.size, (self.x + 1) * self.world.size, (self.y + 1) * self.world.size, fill = 'black', width = 0)
         self.show()
     
     def tank_update(self):
@@ -221,116 +231,143 @@ class Tank: #___________________________________________________________________
             self.fire()
         self.show()
         self.points += 1
+        if (self.x == 1) or (self.y == 1) or (self.x == self.world.x - 2) or (self.y == self.world.y - 2):
+            self.points -= 10
     
     def charging(self):
         self.charge_part += 1
     
     
     def calculate(self):
+        movup = 0
+        movleft = 0
+        for i in self.world.tanks:
+            if i != self:
+                delta_x = self.x - i.x
+                delta_y = self.y - i.y
+                movup += self.w[0] * delta_y
+                movleft += self.w[0] * delta_x
+                movup += self.w[1] / (delta_y + 0.5)
+                movleft += self.w[1] / (delta_x + 0.5)
+                movup += self.w[2] / (delta_y + 0.5) ** 2
+                movleft += self.w[2] / (delta_x + 0.5) ** 2
+        if abs(movup) > abs(movleft):
+            if movup > 50:
+                if self.course == 'up':
+                    self.turning_left = False
+                    self.turning_right = False
+                    self.moving = True
+                if self.course == 'left':
+                    self.turning_left = False
+                    self.turning_right = True
+                    self.moving = False
+                if self.course == 'right':
+                    self.turning_left = True
+                    self.turning_right = False
+                    self.moving = False
+                if self.course == 'down':
+                    self.turning_left = False
+                    self.turning_right = False
+                    if movleft > 0:
+                        self.turning_right = True
+                    else:
+                        self.turning_left = True
+                    self.moving = False
+            elif movup < -50:
+                if self.course == 'down':
+                    self.turning_left = False
+                    self.turning_right = False
+                    self.moving = True
+                if self.course == 'right':
+                    self.turning_left = False
+                    self.turning_right = True
+                    self.moving = False
+                if self.course == 'left':
+                    self.turning_left = True
+                    self.turning_right = False
+                    self.moving = False
+                if self.course == 'up':
+                    self.turning_left = False
+                    self.turning_right = False
+                    if movleft > 0:
+                        self.turning_left = True
+                    else:
+                        self.turning_right = True
+                    self.moving = False
+            else:
+                self.turning_left = False
+                self.turning_right = False
+                self.moving = False
+        else:  
+            if movleft > 50:
+                if self.course == 'left':
+                    self.turning_left = False
+                    self.turning_right = False
+                    self.moving = True
+                if self.course == 'down':
+                    self.turning_left = False
+                    self.turning_right = True
+                    self.moving = False
+                if self.course == 'up':
+                    self.turning_left = True
+                    self.turning_right = False
+                    self.moving = False
+                if self.course == 'right':
+                    self.turning_left = False
+                    self.turning_right = False
+                    if movup > 0:
+                        self.turning_left = True
+                    else:
+                        self.turning_right = True
+                    self.moving = False
+            elif movleft < -50:
+                if self.course == 'right':
+                    self.turning_left = False
+                    self.turning_right = False
+                    self.moving = True
+                if self.course == 'up':
+                    self.turning_left = False
+                    self.turning_right = True
+                    self.moving = False
+                if self.course == 'down':
+                    self.turning_left = True
+                    self.turning_right = False
+                    self.moving = False
+                if self.course == 'left':
+                    self.turning_left = False
+                    self.turning_right = False
+                    if movup > 0:
+                        self.turning_right = True
+                    else:
+                        self.turning_left = True
+                    self.moving = False
+            else:
+                self.turning_left = False
+                self.turning_right = False
+                self.moving = False
+        fir = 0
+        for i in self.world.tanks:
+            if i != self:
+                if self.course == 'up':
+                    r = self.y - i.y
+                if self.course == 'down':
+                    r = 0 - self.y + i.y
+                if self.course == 'left':
+                    r = self.x - i.x
+                if self.course == 'right':
+                    r = 0 - self.x + i.x
+                cos = r / (((self.x - i.x) ** 2 + (self.y - i.y) ** 2) ** 0.5 + 0.5)
+                if cos != 0:
+                    tan = (1 - cos ** 2) ** 0.5 / cos
+                else:
+                    tan = 1000
+                fir += self.w[3] * r
+                fir += self.w[4] * 1 / (r + 0.5)
+                fir += self.w[5] * 1 / (r + 0.5) ** 2
+                fir += self.w[6] * r * tan
+                fir += self.w[7] * tan
+                fir += self.w[8] * r * tan ** 2
         
-        if self.course == 'up':
-            mov = self.x * int(self.w[0]) + self.y * int(self.w[1]) + len(self.world.tanks) * int(self.w[2])
-            for i in self.world.tanks:
-                mov += (i.x - self.x) * self.w[12] + (i.y - self.y) * self.w[13]
-                mov += 1 / (i.x - self.x + 0.5) * self.w[14] + 1 / (i.y - self.y + 0.5) * self.w[15]
-        if self.course == 'down':
-            mov = self.x * int(self.w[3]) + self.y * int(self.w[4]) + len(self.world.tanks) * int(self.w[5])
-            for i in self.world.tanks:
-                mov += (i.x - self.x) * self.w[16] + (i.y - self.y) * self.w[17]
-                mov += 1 / (i.x - self.x + 0.5) * self.w[18] + 1 / (i.y - self.y + 0.5) * self.w[19]
-        if self.course == 'right':
-            mov = self.x * int(self.w[6]) + self.y * int(self.w[7]) + len(self.world.tanks) * int(self.w[8])
-            for i in self.world.tanks:
-                mov += (i.x - self.x) * self.w[20] + (i.y - self.y) * self.w[21]
-                mov += 1 / (i.x - self.x + 0.5) * self.w[22] + 1 / (i.y - self.y + 0.5) * self.w[23]
-        if self.course == 'left':
-            mov = self.x * int(self.w[9]) + self.y * int(self.w[10]) + len(self.world.tanks) * int(self.w[11])
-            for i in self.world.tanks:
-                mov += (i.x - self.x) * self.w[24] + (i.y - self.y) * self.w[25]
-                mov += 1 / (i.x - self.x + 0.5) * self.w[26] + 1 / (i.y - self.y + 0.5) * self.w[27]
-        
-        if self.course == 'up':
-            turl = self.x * int(self.w[28]) + self.y * int(self.w[29]) + len(self.world.tanks) * int(self.w[30])
-            for i in self.world.tanks:
-                turl += (i.x - self.x) * self.w[31] + (i.y - self.y) * self.w[32]
-                turl += 1 / (i.x - self.x + 0.5) * self.w[33] + 1 / (i.y - self.y + 0.5) * self.w[34]
-        if self.course == 'down':
-            turl = self.x * int(self.w[35]) + self.y * int(self.w[36]) + len(self.world.tanks) * int(self.w[37])
-            for i in self.world.tanks:
-                turl += (i.x - self.x) * self.w[38] + (i.y - self.y) * self.w[39]
-                turl += 1 / (i.x - self.x + 0.5) * self.w[40] + 1 / (i.y - self.y + 0.5) * self.w[41]
-        if self.course == 'right':
-            turl = self.x * int(self.w[42]) + self.y * int(self.w[43]) + len(self.world.tanks) * int(self.w[44])
-            for i in self.world.tanks:
-                turl += (i.x - self.x) * self.w[45] + (i.y - self.y) * self.w[46]
-                turl += 1 / (i.x - self.x + 0.5) * self.w[47] + 1 / (i.y - self.y + 0.5) * self.w[48]
-        if self.course == 'left':
-            turl = self.x * int(self.w[49]) + self.y * int(self.w[50]) + len(self.world.tanks) * int(self.w[51])
-            for i in self.world.tanks:
-                turl += (i.x - self.x) * self.w[52] + (i.y - self.y) * self.w[53]
-                turl += 1 / (i.x - self.x + 0.5) * self.w[54] + 1 / (i.y - self.y + 0.5) * self.w[55]
-        
-        if self.course == 'up':
-            turr = self.x * int(self.w[56]) + self.y * int(self.w[57]) + len(self.world.tanks) * int(self.w[58])
-            for i in self.world.tanks:
-                turr += (i.x - self.x) * self.w[59] + (i.y - self.y) * self.w[60]
-                turr += 1 / (i.x - self.x + 0.5) * self.w[61] + 1 / (i.y - self.y + 0.5) * self.w[62]
-        if self.course == 'down':
-            turr = self.x * int(self.w[63]) + self.y * int(self.w[64]) + len(self.world.tanks) * int(self.w[65])
-            for i in self.world.tanks:
-                turr += (i.x - self.x) * self.w[66] + (i.y - self.y) * self.w[67]
-                turr += 1 / (i.x - self.x + 0.5) * self.w[68] + 1 / (i.y - self.y + 0.5) * self.w[69]
-        if self.course == 'right':
-            turr = self.x * int(self.w[70]) + self.y * int(self.w[71]) + len(self.world.tanks) * int(self.w[72])
-            for i in self.world.tanks:
-                turr += (i.x - self.x) * self.w[73] + (i.y - self.y) * self.w[74]
-                turr += 1 / (i.x - self.x + 0.5) * self.w[75] + 1 / (i.y - self.y + 0.5) * self.w[76]
-        if self.course == 'left':
-            turr = self.x * int(self.w[77]) + self.y * int(self.w[78]) + len(self.world.tanks) * int(self.w[79])
-            for i in self.world.tanks:
-                turr += (i.x - self.x) * self.w[80] + (i.y - self.y) * self.w[81]
-                turr += 1 / (i.x - self.x + 0.5) * self.w[82] + 1 / (i.y - self.y + 0.5) * self.w[83]
-        
-        
-        
-        
-        if self.course == 'up':
-            fir = self.x * int(self.w[84]) + self.y * int(self.w[85]) + len(self.world.tanks) * int(self.w[86])
-            for i in self.world.tanks:
-                fir += (i.x - self.x) * self.w[87] + (i.y - self.y) * self.w[88]
-                fir += 1 / (i.x - self.x + 0.5) * self.w[89] + 1 / (i.y - self.y + 0.5) * self.w[90]
-        if self.course == 'down':
-            fir = self.x * int(self.w[91]) + self.y * int(self.w[92]) + len(self.world.tanks) * int(self.w[93])
-            for i in self.world.tanks:
-                fir += (i.x - self.x) * self.w[94] + (i.y - self.y) * self.w[95]
-                fir += 1 / (i.x - self.x + 0.5) * self.w[96] + 1 / (i.y - self.y + 0.5) * self.w[97]
-        if self.course == 'right':
-            fir = self.x * int(self.w[98]) + self.y * int(self.w[99]) + len(self.world.tanks) * int(self.w[100])
-            for i in self.world.tanks:
-                fir += (i.x - self.x) * self.w[101] + (i.y - self.y) * self.w[102]
-                fir += 1 / (i.x - self.x + 0.5) * self.w[103] + 1 / (i.y - self.y + 0.5) * self.w[104]
-        if self.course == 'left':
-            fir = self.x * int(self.w[105]) + self.y * int(self.w[106]) + len(self.world.tanks) * int(self.w[107])
-            for i in self.world.tanks:
-                fir += (i.x - self.x) * self.w[108] + (i.y - self.y) * self.w[109]
-                fir += 1 / (i.x - self.x + 0.5) * self.w[110] + 1 / (i.y - self.y + 0.5) * self.w[111]
-        
-        
-        
-        
-        
-        if mov > 0:
-            self.moving = True
-        else:    
-            self.moving = False
-        if turl > 0:
-            self.turning_left = True
-        else:    
-            self.turning_left = False
-        if turr > 0:
-            self.turning_right = True
-        else:    
-            self.turning_right = False
         if fir > 0:
             self.fireing = True
         else:    
@@ -338,67 +375,69 @@ class Tank: #___________________________________________________________________
 
     
     def destroy(self):
-        canv.delete(self.centre)
-        canv.delete(self.gun)
-        canv.delete(self.left_bort)
-        canv.delete(self.right_bort)
-        canv.delete(self.left_ass)
-        canv.delete(self.right_ass)
-        if self.ii:
-            canv.delete(self.ass)
+        if vision:
+            canv.delete(self.centre)
+            canv.delete(self.gun)
+            canv.delete(self.left_bort)
+            canv.delete(self.right_bort)
+            canv.delete(self.left_ass)
+            canv.delete(self.right_ass)
+            if self.ii:
+                canv.delete(self.ass)
         self.world.tanks.remove(self)
         self.world.dead_tanks.append(self)
     
     def show(self):
-        lcol = 'black'
-        if self.lifes == 3:
-            lcol = 'green'
-        if self.lifes == 2:
-            lcol = 'yellow'
-        if self.lifes == 1:
-            lcol = 'red'
-        ccol = 'black'
-        if self.charges == 3:
-            ccol = 'green'
-        if self.charges == 2:
-            ccol = 'yellow'
-        if self.charges == 1:
-            ccol = 'red'
-        canv.itemconfig(self.centre, fill = lcol)
-        canv.itemconfig(self.gun, fill = ccol)
-        canv.coords(self.centre,self.x*self.world.size,self.y*self.world.size,(self.x+1)*self.world.size,(self.y+1)*self.world.size)
-        if self.course == 'up':
-            canv.coords(self.gun,self.x*self.world.size,(self.y-1)*self.world.size,(self.x+ 1) * self.world.size, self.y * self.world.size)
-            canv.coords(self.left_bort,(self.x-1)*self.world.size,self.y*self.world.size,self.x*self.world.size,(self.y+1)*self.world.size)
-            canv.coords(self.right_bort,(self.x+1)*self.world.size,self.y*self.world.size,(self.x+2)*self.world.size,(self.y+1)*self.world.size)
-            canv.coords(self.left_ass,(self.x - 1)* self.world.size, (self.y + 1)* self.world.size, self.x * self.world.size, (self.y + 2) * self.world.size)
-            canv.coords(self.right_ass,(self.x + 1)* self.world.size, (self.y + 1)* self.world.size, (self.x + 2) * self.world.size, (self.y + 2) *self.world.size)
-            if self.ii:
-                canv.coords(self.ass,self.x * self.world.size, (self.y + 1)* self.world.size, (self.x + 1) * self.world.size, (self.y + 2) * self.world.size)
-        if self.course == 'down':
-            canv.coords(self.gun,self.x * self.world.size, (self.y + 1) * self.world.size, (self.x + 1) * self.world.size, (self.y  + 2)* self.world.size)
-            canv.coords(self.right_bort,(self.x - 1)* self.world.size, self.y * self.world.size, self.x * self.world.size, (self.y + 1) * self.world.size)
-            canv.coords(self.left_bort,(self.x + 1)* self.world.size, self.y * self.world.size, (self.x + 2) * self.world.size, (self.y + 1) * self.world.size)
-            canv.coords(self.right_ass,(self.x - 1)* self.world.size, (self.y - 1)* self.world.size, self.x * self.world.size, self.y * self.world.size)
-            canv.coords(self.left_ass,(self.x + 1)* self.world.size, (self.y - 1)* self.world.size, (self.x + 2) * self.world.size, self.y * self.world.size)
-            if self.ii:
-                canv.coords(self.ass,self.x * self.world.size, (self.y - 1) * self.world.size, (self.x + 1) * self.world.size, self.y * self.world.size)
-        if self.course == 'right':
-            canv.coords(self.gun,(self.x + 1)* self.world.size, self.y * self.world.size, (self.x + 2) * self.world.size, (self.y + 1) * self.world.size)
-            canv.coords(self.left_bort,self.x * self.world.size, (self.y - 1) * self.world.size, (self.x + 1) * self.world.size, self.y * self.world.size)
-            canv.coords(self.right_bort,self.x * self.world.size, (self.y + 1)* self.world.size, (self.x + 1) * self.world.size, (self.y + 2) * self.world.size)
-            canv.coords(self.left_ass,(self.x - 1)* self.world.size, (self.y - 1)* self.world.size, self.x * self.world.size, self.y * self.world.size)
-            canv.coords(self.right_ass,(self.x - 1)* self.world.size, (self.y + 1)* self.world.size, self.x * self.world.size, (self.y + 2) * self.world.size)
-            if self.ii:
-                canv.coords(self.ass,(self.x - 1)* self.world.size, self.y * self.world.size, self.x * self.world.size, (self.y + 1) * self.world.size)
-        if self.course == 'left':
-            canv.coords(self.gun,(self.x - 1)* self.world.size, self.y * self.world.size, self.x * self.world.size, (self.y + 1) * self.world.size)
-            canv.coords(self.left_bort,self.x * self.world.size, (self.y + 1)* self.world.size, (self.x + 1) * self.world.size, (self.y + 2) * self.world.size)
-            canv.coords(self.right_bort,self.x * self.world.size, (self.y - 1) * self.world.size, (self.x + 1) * self.world.size, self.y * self.world.size)
-            canv.coords(self.left_ass,(self.x + 1)* self.world.size, (self.y + 1)* self.world.size, (self.x + 2) * self.world.size, (self.y + 2) * self.world.size)
-            canv.coords(self.right_ass,(self.x + 1)* self.world.size, (self.y - 1)* self.world.size, (self.x + 2) * self.world.size, self.y * self.world.size)
-            if self.ii:
-                canv.coords(self.ass,(self.x + 1)* self.world.size, self.y * self.world.size, (self.x + 2) * self.world.size, (self.y + 1) * self.world.size)
+        if vision:
+            lcol = 'black'
+            if self.lifes == 3:
+                lcol = 'green'
+            if self.lifes == 2:
+                lcol = 'yellow'
+            if self.lifes == 1:
+                lcol = 'red'
+            ccol = 'black'
+            if self.charges == 3:
+                ccol = 'green'
+            if self.charges == 2:
+                ccol = 'yellow'
+            if self.charges == 1:
+                ccol = 'red'
+            canv.itemconfig(self.centre, fill = lcol)
+            canv.itemconfig(self.gun, fill = ccol)
+            canv.coords(self.centre,self.x*self.world.size,self.y*self.world.size,(self.x+1)*self.world.size,(self.y+1)*self.world.size)
+            if self.course == 'up':
+                canv.coords(self.gun,self.x*self.world.size,(self.y-1)*self.world.size,(self.x+ 1) * self.world.size, self.y * self.world.size)
+                canv.coords(self.left_bort,(self.x-1)*self.world.size,self.y*self.world.size,self.x*self.world.size,(self.y+1)*self.world.size)
+                canv.coords(self.right_bort,(self.x+1)*self.world.size,self.y*self.world.size,(self.x+2)*self.world.size,(self.y+1)*self.world.size)
+                canv.coords(self.left_ass,(self.x - 1)* self.world.size, (self.y + 1)* self.world.size, self.x * self.world.size, (self.y + 2) * self.world.size)
+                canv.coords(self.right_ass,(self.x + 1)* self.world.size, (self.y + 1)* self.world.size, (self.x + 2) * self.world.size, (self.y + 2) *self.world.size)
+                if self.ii:
+                    canv.coords(self.ass,self.x * self.world.size, (self.y + 1)* self.world.size, (self.x + 1) * self.world.size, (self.y + 2) * self.world.size)
+            if self.course == 'down':
+                canv.coords(self.gun,self.x * self.world.size, (self.y + 1) * self.world.size, (self.x + 1) * self.world.size, (self.y  + 2)* self.world.size)
+                canv.coords(self.right_bort,(self.x - 1)* self.world.size, self.y * self.world.size, self.x * self.world.size, (self.y + 1) * self.world.size)
+                canv.coords(self.left_bort,(self.x + 1)* self.world.size, self.y * self.world.size, (self.x + 2) * self.world.size, (self.y + 1) * self.world.size)
+                canv.coords(self.right_ass,(self.x - 1)* self.world.size, (self.y - 1)* self.world.size, self.x * self.world.size, self.y * self.world.size)
+                canv.coords(self.left_ass,(self.x + 1)* self.world.size, (self.y - 1)* self.world.size, (self.x + 2) * self.world.size, self.y * self.world.size)
+                if self.ii:
+                    canv.coords(self.ass,self.x * self.world.size, (self.y - 1) * self.world.size, (self.x + 1) * self.world.size, self.y * self.world.size)
+            if self.course == 'right':
+                canv.coords(self.gun,(self.x + 1)* self.world.size, self.y * self.world.size, (self.x + 2) * self.world.size, (self.y + 1) * self.world.size)
+                canv.coords(self.left_bort,self.x * self.world.size, (self.y - 1) * self.world.size, (self.x + 1) * self.world.size, self.y * self.world.size)
+                canv.coords(self.right_bort,self.x * self.world.size, (self.y + 1)* self.world.size, (self.x + 1) * self.world.size, (self.y + 2) * self.world.size)
+                canv.coords(self.left_ass,(self.x - 1)* self.world.size, (self.y - 1)* self.world.size, self.x * self.world.size, self.y * self.world.size)
+                canv.coords(self.right_ass,(self.x - 1)* self.world.size, (self.y + 1)* self.world.size, self.x * self.world.size, (self.y + 2) * self.world.size)
+                if self.ii:
+                    canv.coords(self.ass,(self.x - 1)* self.world.size, self.y * self.world.size, self.x * self.world.size, (self.y + 1) * self.world.size)
+            if self.course == 'left':
+                canv.coords(self.gun,(self.x - 1)* self.world.size, self.y * self.world.size, self.x * self.world.size, (self.y + 1) * self.world.size)
+                canv.coords(self.left_bort,self.x * self.world.size, (self.y + 1)* self.world.size, (self.x + 1) * self.world.size, (self.y + 2) * self.world.size)
+                canv.coords(self.right_bort,self.x * self.world.size, (self.y - 1) * self.world.size, (self.x + 1) * self.world.size, self.y * self.world.size)
+                canv.coords(self.left_ass,(self.x + 1)* self.world.size, (self.y + 1)* self.world.size, (self.x + 2) * self.world.size, (self.y + 2) * self.world.size)
+                canv.coords(self.right_ass,(self.x + 1)* self.world.size, (self.y - 1)* self.world.size, (self.x + 2) * self.world.size, self.y * self.world.size)
+                if self.ii:
+                    canv.coords(self.ass,(self.x + 1)* self.world.size, self.y * self.world.size, (self.x + 2) * self.world.size, (self.y + 1) * self.world.size)
     
     def move(self):
         if (self.course == 'up') and (self.y != 1):
@@ -455,7 +494,7 @@ class Tank: #___________________________________________________________________
     
     
     def fire(self):
-        self.points -= 58
+        self.points -= 50
         if self.charges > 0:
             self.charges -= 1
             self.world.bullets.append(Bullet(self.world, self.x, self.y, self.course, self))
