@@ -60,7 +60,7 @@ def weights_update():
     
     for i in range(5):
         sss = []
-        for j in range(9):
+        for j in range(number_of_weights):
             sss.append(str(rnd(-100, 101)))
         new_weights.append(sss)
         
@@ -78,6 +78,8 @@ def weights_update():
 
 
 
+    
+    
 def exit(event):
     rezults = open('rezults.csv', 'w')
     for t in m.tanks:
@@ -91,6 +93,35 @@ def exit(event):
 def rgb(r, g, b):
     return "#%02x%02x%02x" % (r, g, b)
 
+
+class Stone:
+    def __init__(self, world, x = -1, y = -1):
+        self.world = world
+        if x == -1:
+            self.x = rnd(0, self.world.x)
+        if y == -1:
+            self.y = rnd(0, self.world.y)
+        if vision:
+            self.id = canv.create_rectangle(self.world.size * self.x, self.world.size * self.y,
+                                        self.world.size * (self.x + 1), self.world.size * (self.y + 1), fill = 'gray')
+        self.world.stones.append(self)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Map:
     def __init__(self, x = 200, y = 130, size = 3, bullets_speed = 5):
         self.x = x
@@ -99,6 +130,7 @@ class Map:
         self.bullets = []
         self.tanks = []
         self.dead_tanks = []
+        self.stones = []
         self.age = 0
         self.tanks_max_charges = 3
         self.tanks_start_lifes = 3
@@ -156,6 +188,11 @@ class Bullet: #_________________________________________________________________
         self.move()
         if (self.x < 0) or (self.y < 0) or (self.x > m.x - 1) or (self.y > m.y - 1):
             self.destroy()
+        z = True
+        for i in self.world.stones:
+            if (self.x == i.x) and (self.y == i.y) and z:
+                self.destroy()
+                z = False
         self.show()
     
     def show(self):
@@ -251,6 +288,23 @@ class Tank: #___________________________________________________________________
                 movleft += self.w[1] / (delta_x + 0.5)
                 movup += self.w[2] / (delta_y + 0.5) ** 2
                 movleft += self.w[2] / (delta_x + 0.5) ** 2
+                movup += self.w[9] / (delta_y + 0.5) ** 3
+                movleft += self.w[9] / (delta_x + 0.5) ** 3
+                movup += self.w[10] / (delta_y + 0.5) ** 4
+                movleft += self.w[10] / (delta_x + 0.5) ** 4
+        for i in self.world.stones:
+            delta_x = self.x - i.x
+            delta_y = self.y - i.y
+            movup += self.w[11] * delta_y
+            movleft += self.w[11] * delta_x
+            movup += self.w[12] / (delta_y + 0.5)
+            movleft += self.w[12] / (delta_x + 0.5)
+            movup += self.w[13] / (delta_y + 0.5) ** 2
+            movleft += self.w[13] / (delta_x + 0.5) ** 2
+            movup += self.w[14] / (delta_y + 0.5) ** 3
+            movleft += self.w[14] / (delta_x + 0.5) ** 3
+            movup += self.w[15] / (delta_y + 0.5) ** 4
+            movleft += self.w[15] / (delta_x + 0.5) ** 4
         if abs(movup) > abs(movleft):
             if movup > 50:
                 if self.course == 'up':
@@ -441,17 +495,60 @@ class Tank: #___________________________________________________________________
     
     def move(self):
         if (self.course == 'up') and (self.y != 1):
-            self.points += 10
-            self.y -= 1
-        if (self.course == 'down') and (self.y != self.world.y - 2):
-            self.points += 10
-            self.y += 1
-        if (self.course == 'right') and (self.x != self.world.x - 2):
-            self.points += 10
-            self.x += 1
-        if (self.course == 'left') and (self.x != 1):
-            self.points += 10
-            self.x -= 1
+            z = True
+            for i in self.world.tanks:
+                if i != self:
+                    if abs(i.x - self.x) < 3:
+                        if (self.y - i.y < 4) and (self.y - i.y > 0):
+                            z = False
+            for i in self.world.stones:
+                if (self.y - i.y == 2) and ((self.x - i.x == 1) or (self.x - i.x == 0) or(self.x - i.x == -1)):
+                    z = False
+                        
+            if z:            
+                self.points += 10
+                self.y -= 1
+        elif (self.course == 'down') and (self.y != self.world.y - 2):
+            z = True
+            for i in self.world.tanks:
+                if i != self:
+                    if abs(i.x - self.x) < 3:
+                        if (i.y - self.y < 4) and (i.y - self.y > 0):
+                            z = False
+            for i in self.world.stones:
+                if (self.y - i.y ==  -2) and ((self.x - i.x == 1) or (self.x - i.x == 0) or(self.x - i.x == -1)):
+                    z = False
+            if z:
+                self.points += 10
+                self.y += 1
+        elif (self.course == 'right') and (self.x != self.world.x - 2):
+            z = True
+            for i in self.world.tanks:
+                if i != self:
+                    if abs(i.y - self.y) < 3:
+                        if (i.x - self.x < 4) and (i.x - self.x > 0):
+                            z = False
+            for i in self.world.stones:
+                if (self.x - i.x == -2) and ((self.y - i.y == 1) or (self.y - i.y == 0) or(self.y - i.y == -1)):
+                    z = False
+                        
+            if z:
+                self.points += 10
+                self.x += 1
+        elif (self.course == 'left') and (self.x != 1):
+            z = True
+            for i in self.world.tanks:
+                if i != self:
+                    if abs(i.y - self.y) < 3:
+                        if (self.x - i.x < 4) and (self.x - i.x > 0):
+                            z = False
+            for i in self.world.stones:
+                if (self.x - i.x == 2) and ((self.y - i.y == 1) or (self.y - i.y == 0) or(self.y - i.y == -1)):
+                    z = False
+                        
+            if z:
+                self.points += 10
+                self.x -= 1
     
     def turn_left(self):
         if self.course == 'up':
@@ -514,7 +611,10 @@ root.bind('<KeyRelease-space>', m.tanks[0].end_fireing)
 """
 file = open('tanks_weights.csv', 'r')
 weights = file.read().split('\n')
+number_of_weights = len(weights[0].split(','))
 file.close()
 m.spaun_bots()
+for i in range(50):
+    m.stones.append(Stone(m))
 m.update()
 root.mainloop() 
